@@ -50,17 +50,20 @@ Dependencies used by the code:
 Dev dependency:
 - nodemon
 
-## Database migrations and seed (psql)
+## Database migrations and seed
 Run the migration to create the todos table:
 
-Using connection string:
+Using connection string (psql):
 - psql "$DATABASE_URL" -f db/migrations/001_create_todos.sql
 
-Using discrete values:
+Using discrete values (psql):
 - PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USER PGPASSWORD=$DB_PASSWORD psql -d $DB_NAME -f db/migrations/001_create_todos.sql
 
-Optional: seed sample data
-- psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql
+Seed sample data:
+- Using npm (recommended; uses existing pg client and .env):
+  - npm run db:seed
+- Or via psql:
+  - psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql
 
 ## Start the server
 Development (auto-reload):
