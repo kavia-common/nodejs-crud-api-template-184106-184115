@@ -1,117 +1,154 @@
 # Node.js CRUD API (Express + PostgreSQL)
 
-This container provides a boilerplate Express server wired for PostgreSQL, intended as a starting template for building REST APIs with full CRUD operations (e.g., a Todo resource).
+An Express + pg boilerplate for building REST APIs with full CRUD operations (includes a Todo example).
 
-Note: The previous scaffold included a FastAPI placeholder; this project replaces it with an Express + pg setup.
+Note: The earlier scaffold included a FastAPI placeholder; this project runs Express with PostgreSQL via `pg`.
 
 ## Features
-
 - Express server with CORS and dotenv
 - PostgreSQL client via `pg`
-- Scripts for development (nodemon) and production
+- Simple built-in security and access logs (no external helmet/morgan required)
 - Environment-driven configuration
+- OpenAPI JSON and docs landing page
 
 ## Requirements
-
 - Node.js >= 18
 - A running PostgreSQL database or connection string
 
 ## Environment Variables
+Create `.env` from the example and set values for your environment.
 
-Copy `.env.example` to `.env` and update values for your environment.
+Required (one of the following approaches):
+1) Single connection string:
+- DATABASE_URL=postgres://user:password@host:5432/dbname
 
-Required:
-- `PORT` (default: 3001)
-- `DATABASE_URL` (e.g., `postgres://user:password@host:5432/dbname`)
+OR
 
-Optional (if you prefer discrete values instead of `DATABASE_URL`):
-- `DB_HOST`
-- `DB_PORT`
-- `DB_NAME`
-- `DB_USER`
-- `DB_PASSWORD`
+2) Discrete values (all required if you do not use DATABASE_URL):
+- DB_HOST=localhost
+- DB_PORT=5432
+- DB_NAME=yourdb
+- DB_USER=youruser
+- DB_PASSWORD=yourpassword
 
-## Getting Started
+Optional:
+- PORT=3001 (default: 3001)
 
-1. Install dependencies:
-   - `npm install`
+Steps:
+- cp .env.example .env
+- Edit .env and set the variables above.
 
-2. Create your environment file:
-   - `cp .env.example .env`
-   - Update values in `.env`
+## Install dependencies
+- npm install
 
-3. Run database migrations (PostgreSQL):
-   - Using connection string (preferred):
-     - `psql "$DATABASE_URL" -f db/migrations/001_create_todos.sql`
-   - Or using discrete values:
-     - `PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USER PGPASSWORD=$DB_PASSWORD psql -d $DB_NAME -f db/migrations/001_create_todos.sql`
+Dependencies used by the code:
+- express
+- cors
+- dotenv
+- pg
 
-   Optional: seed sample data
-   - `psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql`
+Dev dependency:
+- nodemon
 
-4. Start the server in development (auto-reload):
-   - `npm run dev`
+## Database migrations and seed (psql)
+Run the migration to create the todos table:
 
-5. Start the server in production:
-   - `npm start`
+Using connection string:
+- psql "$DATABASE_URL" -f db/migrations/001_create_todos.sql
 
-The server entrypoint is `src/server.js`. You can implement routes and database access under `src/` (e.g., `src/routes`, `src/db`, `src/controllers`, `src/models`). This template includes:
-- Health check route at GET `/health`
-- Database pool in `src/db/`
-- Todo SQL helpers in `src/models/todo.model.js`
-- SQL migration in `db/migrations/001_create_todos.sql`
-- Optional seed data in `db/seed/001_seed_todos.sql`
-- OpenAPI docs served at:
-  - `/openapi.json` — OpenAPI v3 JSON
-  - `/docs` — simple landing page with a link to the JSON
+Using discrete values:
+- PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USER PGPASSWORD=$DB_PASSWORD psql -d $DB_NAME -f db/migrations/001_create_todos.sql
 
-## API Documentation
+Optional: seed sample data
+- psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql
 
-- OpenAPI spec is available at `GET /openapi.json`.
-- A basic docs landing page is available at `GET /docs`.
+## Start the server
+Development (auto-reload):
+- npm run dev
+Production:
+- npm start
 
-Use with Swagger UI:
-- Online: go to https://petstore.swagger.io/ and paste your server URL + `/openapi.json`
-- Local (if you have Swagger UI locally): point it to the same JSON URL.
+Entrypoint: src/server.js
+- App factory: src/app.js
 
-Use with ReDoc CLI:
-- `npx redoc-cli build http://localhost:${PORT:-3001}/openapi.json -o docs.html`
+## Health and Docs Endpoints
+- GET /health — basic service info
+- GET /health/db — database connectivity check
+- GET /openapi.json — OpenAPI v3 JSON
+- GET /docs — docs landing with link to OpenAPI
 
-Note: The spec covers the `/health` and `/api/todos` endpoints and standard responses.
+Use Swagger UI:
+- https://petstore.swagger.io/ → paste your server URL + /openapi.json
+Example: http://localhost:3001/openapi.json
 
-## Scripts
+## Todo CRUD Endpoints (examples)
+Base path: /api/todos
 
-- `npm run dev` — start with nodemon (watches file changes)
-- `npm start` — start with Node.js
+- List todos
+  GET /api/todos?limit=50&offset=0
+  Response: { "data": [ { "id": 1, "title": "...", ... } ] }
 
-## Dependencies
+- Create todo
+  POST /api/todos
+  Body:
+  {
+    "title": "Buy groceries",
+    "description": "Milk, bread, eggs",
+    "completed": false
+  }
+  Response (201): { "data": { ...new todo... } }
 
-- `express` — web framework
-- `cors` — Cross-Origin Resource Sharing middleware
-- `dotenv` — load environment variables from `.env`
-- `pg` — PostgreSQL client
+- Get one
+  GET /api/todos/1
+  Response: { "data": { "id": 1, ... } }
 
-Dev Dependencies:
-- `nodemon` — development watcher
+- Replace (PUT)
+  PUT /api/todos/1
+  Body:
+  {
+    "title": "New title",
+    "description": "May be null",
+    "completed": true
+  }
+  Response: { "data": { ...updated todo... } }
 
-## Project Structure (suggested)
+- Update (PATCH)
+  PATCH /api/todos/1
+  Body (any subset):
+  {
+    "completed": true
+  }
+  Response: { "data": { ...updated todo... } }
 
-```
+- Delete
+  DELETE /api/todos/1
+  Response: 204 No Content
+
+Validation errors return:
+{
+  "error": "ValidationError",
+  "message": "Request validation failed",
+  "details": [ ... ]
+}
+
+## Project Structure (overview)
 nodejs_crud_api/
 ├─ src/
-│  ├─ server.js           # App entrypoint (create Express app, apply middlewares, start server)
-│  ├─ routes/             # Express routers (e.g., todos.js)
-│  ├─ controllers/        # Route handlers
-│  ├─ db/                 # Database client / pool setup
-│  └─ models/             # SQL helpers or query modules
-├─ .env.example
-├─ .gitignore
+│  ├─ server.js            # Start server
+│  ├─ app.js               # Create Express app
+│  ├─ routes/              # Routers: health, docs, todos
+│  ├─ controllers/         # Route handlers
+│  ├─ db/                  # Database client/pool
+│  ├─ models/              # SQL helpers (todos)
+│  ├─ schemas/             # Minimal validation helpers
+├─ db/
+│  ├─ migrations/001_create_todos.sql
+│  └─ seed/001_seed_todos.sql
+├─ openapi/openapi.json
 ├─ package.json
 └─ README.md
-```
 
 ## Notes
-
-- Do not commit a real `.env` file.
-- When you add the database pool, ensure it reads from `DATABASE_URL` or the individual DB_* variables.
-- Consider adding security/logging middlewares like `helmet` and `morgan` later if needed.
+- Do not commit your real .env.
+- The code doesn’t depend on external `helmet` or `morgan`; minimal security headers and access logs are built-in.
+- If you add `helmet` or `morgan` in the future, install them and wire them in `src/middleware/security.js` or `src/app.js`.
