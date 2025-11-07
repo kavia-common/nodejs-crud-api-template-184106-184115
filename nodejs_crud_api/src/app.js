@@ -1,10 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import { registerSecurityAndLogging } from './middleware/security.js';
 
 /**
  * PUBLIC_INTERFACE
  * createApp
  * Create and configure an Express application instance.
+ * - Applies security headers and request logging
  * - Applies CORS
  * - Enables JSON body parsing
  * - Mounts routers
@@ -16,7 +18,11 @@ import cors from 'cors';
 export function createApp() {
   const app = express();
 
+  // Register security and logging early to cover all routes, including errors
+  registerSecurityAndLogging(app);
+
   // Middlewares
+  // Keep CORS and JSON parsing properly ordered after security/logging
   app.use(cors());
   app.use(express.json());
 
