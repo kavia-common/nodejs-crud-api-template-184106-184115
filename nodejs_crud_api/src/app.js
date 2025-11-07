@@ -26,25 +26,9 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
-  // Base router placeholder
-  const router = express.Router();
-
-  /**
-   * PUBLIC_INTERFACE
-   * GET /health
-   * Health check endpoint.
-   * Returns JSON with status and timestamp for uptime verification.
-   */
-  router.get('/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      service: 'nodejs-crud-api',
-      time: new Date().toISOString(),
-    });
-  });
-
-  // Mount router at root
-  app.use('/', router);
+  // Mount health routes (GET /health and GET /health/db)
+  import createHealthRouter from './routes/health.routes.js';
+  app.use('/', createHealthRouter());
 
   // Mount API routes
   // Todos routes
