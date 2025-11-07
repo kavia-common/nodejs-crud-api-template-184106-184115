@@ -40,13 +40,27 @@ Optional (if you prefer discrete values instead of `DATABASE_URL`):
    - `cp .env.example .env`
    - Update values in `.env`
 
-3. Start the server in development (auto-reload):
+3. Run database migrations (PostgreSQL):
+   - Using connection string (preferred):
+     - `psql "$DATABASE_URL" -f db/migrations/001_create_todos.sql`
+   - Or using discrete values:
+     - `PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USER PGPASSWORD=$DB_PASSWORD psql -d $DB_NAME -f db/migrations/001_create_todos.sql`
+
+   Optional: seed sample data
+   - `psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql`
+
+4. Start the server in development (auto-reload):
    - `npm run dev`
 
-4. Start the server in production:
+5. Start the server in production:
    - `npm start`
 
-The server entrypoint is `src/server.js`. You can implement routes and database access under `src/` (e.g., `src/routes`, `src/db`, `src/controllers`). A standard next step is to add a health check route (GET `/health`) and CRUD routes for a `Todo` resource.
+The server entrypoint is `src/server.js`. You can implement routes and database access under `src/` (e.g., `src/routes`, `src/db`, `src/controllers`, `src/models`). This template includes:
+- Health check route at GET `/health`
+- Database pool in `src/db/`
+- Todo SQL helpers in `src/models/todo.model.js`
+- SQL migration in `db/migrations/001_create_todos.sql`
+- Optional seed data in `db/seed/001_seed_todos.sql`
 
 ## Scripts
 
