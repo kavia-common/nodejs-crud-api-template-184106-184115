@@ -1,8 +1,9 @@
 # Node.js CRUD API (Express + PostgreSQL)
 
-An Express + pg boilerplate for building REST APIs with full CRUD operations (includes a Todo example).
+Primary runtime: Node.js Express server on port 3001.
+Legacy note: There are some legacy FastAPI placeholder files under src/api; they are kept only for reference and are NOT used by the running service.
 
-Note: The earlier scaffold included a FastAPI placeholder; this project runs Express with PostgreSQL via `pg`.
+An Express + pg boilerplate for building REST APIs with full CRUD operations (includes a Todo example).
 
 ## Features
 - Express server with CORS and dotenv
@@ -14,6 +15,32 @@ Note: The earlier scaffold included a FastAPI placeholder; this project runs Exp
 ## Requirements
 - Node.js >= 18
 - A running PostgreSQL database or connection string
+
+## Quickstart
+1) Copy and configure environment:
+- cp .env.example .env
+- Edit .env (see Environment Variables below)
+
+2) Install dependencies:
+- npm install
+
+3) Run database migration (create todos table):
+- Using connection string:
+  - psql "$DATABASE_URL" -f db/migrations/001_create_todos.sql
+- Using discrete values:
+  - PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USER PGPASSWORD=$DB_PASSWORD psql -d $DB_NAME -f db/migrations/001_create_todos.sql
+
+4) (Optional) Seed example data:
+- npm run db:seed
+  or
+- psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql
+
+5) Start the Node.js server on port 3001:
+- Development (auto-reload): npm run dev
+- Production: npm start
+
+Entrypoint: src/server.js
+- App factory: src/app.js
 
 ## Environment Variables
 Create `.env` from the example and set values for your environment.
@@ -50,34 +77,12 @@ Dependencies used by the code:
 Dev dependency:
 - nodemon
 
-## Database migrations and seed
-Run the migration to create the todos table:
+## Health and Docs Endpoints (Node.js server)
+Base URL: http://localhost:3001
 
-Using connection string (psql):
-- psql "$DATABASE_URL" -f db/migrations/001_create_todos.sql
-
-Using discrete values (psql):
-- PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USER PGPASSWORD=$DB_PASSWORD psql -d $DB_NAME -f db/migrations/001_create_todos.sql
-
-Seed sample data:
-- Using npm (recommended; uses existing pg client and .env):
-  - npm run db:seed
-- Or via psql:
-  - psql "$DATABASE_URL" -f db/seed/001_seed_todos.sql
-
-## Start the server
-Development (auto-reload):
-- npm run dev
-Production:
-- npm start
-
-Entrypoint: src/server.js
-- App factory: src/app.js
-
-## Health and Docs Endpoints
 - GET /health — basic service info
 - GET /health/db — database connectivity check
-- GET /openapi.json — OpenAPI v3 JSON
+- GET /openapi.json — OpenAPI v3 JSON (Node.js)
 - GET /docs — docs landing with link to OpenAPI
 
 Use Swagger UI:
@@ -137,13 +142,14 @@ Validation errors return:
 ## Project Structure (overview)
 nodejs_crud_api/
 ├─ src/
-│  ├─ server.js            # Start server
+│  ├─ server.js            # Start server (Node.js primary)
 │  ├─ app.js               # Create Express app
 │  ├─ routes/              # Routers: health, docs, todos
 │  ├─ controllers/         # Route handlers
 │  ├─ db/                  # Database client/pool
 │  ├─ models/              # SQL helpers (todos)
 │  ├─ schemas/             # Minimal validation helpers
+│  ├─ api/                 # Legacy FastAPI placeholder (not used at runtime)
 ├─ db/
 │  ├─ migrations/001_create_todos.sql
 │  └─ seed/001_seed_todos.sql
@@ -152,6 +158,8 @@ nodejs_crud_api/
 └─ README.md
 
 ## Notes
+- Primary service is the Node.js Express app on port 3001.
+- Legacy FastAPI files under src/api are retained for reference only and are not used by the running service.
 - Do not commit your real .env.
 - The code doesn’t depend on external `helmet` or `morgan`; minimal security headers and access logs are built-in.
 - If you add `helmet` or `morgan` in the future, install them and wire them in `src/middleware/security.js` or `src/app.js`.
