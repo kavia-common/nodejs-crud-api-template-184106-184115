@@ -52,6 +52,10 @@ export function createApp() {
   import todosRouter from './routes/todos.routes.js';
   app.use('/api/todos', todosRouter);
 
+  // Docs routes: serves /docs and /openapi.json
+  import createDocsRouter from './routes/docs.routes.js';
+  app.use('/', createDocsRouter());
+
   // Centralized error/404 middleware must be registered after all routers
   import { notFound, errorHandler } from './middleware/error.js';
 

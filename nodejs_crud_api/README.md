@@ -61,6 +61,23 @@ The server entrypoint is `src/server.js`. You can implement routes and database 
 - Todo SQL helpers in `src/models/todo.model.js`
 - SQL migration in `db/migrations/001_create_todos.sql`
 - Optional seed data in `db/seed/001_seed_todos.sql`
+- OpenAPI docs served at:
+  - `/openapi.json` — OpenAPI v3 JSON
+  - `/docs` — simple landing page with a link to the JSON
+
+## API Documentation
+
+- OpenAPI spec is available at `GET /openapi.json`.
+- A basic docs landing page is available at `GET /docs`.
+
+Use with Swagger UI:
+- Online: go to https://petstore.swagger.io/ and paste your server URL + `/openapi.json`
+- Local (if you have Swagger UI locally): point it to the same JSON URL.
+
+Use with ReDoc CLI:
+- `npx redoc-cli build http://localhost:${PORT:-3001}/openapi.json -o docs.html`
+
+Note: The spec covers the `/health` and `/api/todos` endpoints and standard responses.
 
 ## Scripts
 

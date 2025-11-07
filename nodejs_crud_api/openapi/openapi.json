@@ -1,0 +1,344 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Node.js CRUD API - Todos",
+    "description": "OpenAPI documentation for the Express-based CRUD API for Todos.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Service health check"
+    },
+    {
+      "name": "Todos",
+      "description": "CRUD operations for Todo items"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health Check",
+        "description": "Returns service status and current server time.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "service": { "type": "string", "example": "nodejs-crud-api" },
+                    "time": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/todos": {
+      "get": {
+        "tags": ["Todos"],
+        "summary": "List todos",
+        "description": "Get a paginated list of todos.",
+        "operationId": "listTodos",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1 },
+            "required": false,
+            "description": "Max number of records to return (default 50)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0 },
+            "required": false,
+            "description": "Number of items to skip (default 0)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of todos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Todo" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "post": {
+        "tags": ["Todos"],
+        "summary": "Create a todo",
+        "description": "Create a new todo item.",
+        "operationId": "createTodo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateTodo" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Todo created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TodoResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/todos/{id}": {
+      "get": {
+        "tags": ["Todos"],
+        "summary": "Get a todo",
+        "description": "Retrieve a single todo by ID.",
+        "operationId": "getTodo",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Todo found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TodoResponse" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "put": {
+        "tags": ["Todos"],
+        "summary": "Replace a todo",
+        "description": "Replace a todo with the provided payload.",
+        "operationId": "putTodo",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdParam" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutTodo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Todo replaced",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TodoResponse" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["Todos"],
+        "summary": "Update part of a todo",
+        "description": "Partially update a todo with the provided fields.",
+        "operationId": "patchTodo",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdParam" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PatchTodo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Todo updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TodoResponse" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["Todos"],
+        "summary": "Delete a todo",
+        "description": "Delete a todo by ID.",
+        "operationId": "deleteTodo",
+        "parameters": [
+          { "$ref": "#/components/parameters/IdParam" }
+        ],
+        "responses": {
+          "204": {
+            "description": "Todo deleted successfully"
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Todo": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 123 },
+          "title": { "type": "string", "example": "Buy groceries" },
+          "description": { "type": ["string", "null"], "example": "Milk, bread, eggs" },
+          "completed": { "type": "boolean", "example": false },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "title", "completed", "created_at", "updated_at"]
+      },
+      "CreateTodo": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": ["string", "null"] },
+          "completed": { "type": "boolean" }
+        },
+        "required": ["title"],
+        "additionalProperties": false
+      },
+      "PutTodo": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": ["string", "null"] },
+          "completed": { "type": "boolean" }
+        },
+        "required": ["title", "description", "completed"],
+        "additionalProperties": false
+      },
+      "PatchTodo": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": ["string", "null"] },
+          "completed": { "type": "boolean" }
+        },
+        "minProperties": 1,
+        "additionalProperties": false
+      },
+      "TodoResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "$ref": "#/components/schemas/Todo" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "BadRequest"
+          },
+          "message": {
+            "type": "string",
+            "example": "Request validation failed"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "IdParam": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Todo ID (positive integer)",
+        "schema": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": { "type": "string", "example": "NotFound" },
+                "message": { "type": "string", "example": "Resource not found" }
+              }
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": { "type": "string", "example": "InternalServerError" },
+                "message": { "type": "string", "example": "An unexpected error occurred" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
