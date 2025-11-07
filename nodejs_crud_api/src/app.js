@@ -7,7 +7,8 @@ import cors from 'cors';
  * Create and configure an Express application instance.
  * - Applies CORS
  * - Enables JSON body parsing
- * - Mounts base router with a health endpoint
+ * - Mounts routers
+ * - Adds 404 and centralized error handlers
  *
  * Returns:
  *  Express.Application - configured app instance (without binding to a port)
@@ -44,6 +45,15 @@ export function createApp() {
   // Note: routes implement parameterized queries via models and include validation middleware.
   import todosRouter from './routes/todos.routes.js';
   app.use('/api/todos', todosRouter);
+
+  // Centralized error/404 middleware must be registered after all routers
+  import { notFound, errorHandler } from './middleware/error.js';
+
+  // 404 for unmatched routes
+  app.use(notFound);
+
+  // Error handler (last)
+  app.use(errorHandler);
 
   return app;
 }
