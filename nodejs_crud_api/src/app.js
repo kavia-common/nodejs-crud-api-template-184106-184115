@@ -39,6 +39,12 @@ export function createApp() {
   // Mount router at root
   app.use('/', router);
 
+  // Mount API routes
+  // Todos routes
+  // Note: routes implement parameterized queries via models and include validation middleware.
+  import todosRouter from './routes/todos.routes.js';
+  app.use('/api/todos', todosRouter);
+
   return app;
 }
 
