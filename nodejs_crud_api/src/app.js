@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import { registerSecurityAndLogging } from './middleware/security.js';
+import { notFound, errorHandler } from './middleware/error.js';
+import createIndexRouter from './routes/index.js';
 
 /**
  * PUBLIC_INTERFACE
@@ -8,8 +10,8 @@ import { registerSecurityAndLogging } from './middleware/security.js';
  * Create and configure an Express application instance.
  * - Applies security headers and request logging
  * - Applies CORS
- * - Enables JSON body parsing
- * - Mounts routers
+ * - Enables JSON body parsing with sensible size limits
+ * - Mounts composed routers
  * - Adds 404 and centralized error handlers
  *
  * Returns:
@@ -18,35 +20,24 @@ import { registerSecurityAndLogging } from './middleware/security.js';
 export function createApp() {
   const app = express();
 
-  // Register security and logging early to cover all routes, including errors
+  // 1) Security + logging first
   registerSecurityAndLogging(app);
 
-  // Middlewares
-  // Keep CORS and JSON parsing properly ordered after security/logging
+  // 2) CORS
   app.use(cors());
-  app.use(express.json());
 
-  // Mount health routes (GET /health and GET /health/db)
-  import createHealthRouter from './routes/health.routes.js';
-  app.use('/', createHealthRouter());
+  // 3) Body parsers with size limits
+  // Limit JSON payloads to 1mb (adjustable via env if desired in future)
+  app.use(express.json({ limit: '1mb' }));
+  // Optionally support urlencoded forms with similar limit
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-  // Mount API routes
-  // Todos routes
-  // Note: routes implement parameterized queries via models and include validation middleware.
-  import todosRouter from './routes/todos.routes.js';
-  app.use('/api/todos', todosRouter);
+  // 4) Routers
+  // Mount composed index router under root; it internally mounts /health, /docs, /openapi.json and /api/todos
+  app.use('/', createIndexRouter());
 
-  // Docs routes: serves /docs and /openapi.json
-  import createDocsRouter from './routes/docs.routes.js';
-  app.use('/', createDocsRouter());
-
-  // Centralized error/404 middleware must be registered after all routers
-  import { notFound, errorHandler } from './middleware/error.js';
-
-  // 404 for unmatched routes
+  // 5) 404 and error handlers (must be last)
   app.use(notFound);
-
-  // Error handler (last)
   app.use(errorHandler);
 
   return app;
